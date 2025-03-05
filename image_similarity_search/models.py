@@ -123,7 +123,7 @@ class SSCDEncoder(BaseEncoder):
             Path to the downloaded weights file
         """
         # Create filename from model name
-        filename = f"{model_name}.pt"
+        filename = f"{model_name}.torchvision.pt"
         save_path = self.weights_dir / filename
 
         # If file already exists, return its path
