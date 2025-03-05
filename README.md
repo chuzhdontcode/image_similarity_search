@@ -41,6 +41,38 @@ search_engine.save_index("index.faiss")
 search_engine.load_index("index.faiss")
 ```
 
+## Command Line Interface
+
+The package provides a command-line interface for adding images to an index and searching for similar images:
+
+### Adding Images
+```bash
+python -m image_similarity_search.search_engine add \
+    --images image1.jpg image2.jpg \
+    --index myindex.faiss \
+    --model-type clip \
+    --use-gpu
+```
+
+Optional arguments:
+- `--ids`: Custom IDs for the images
+- `--model-name`: Specific model name (required for SSCD)
+- `--index-type`: FAISS index type ('l2' or 'ivf')
+
+### Searching Images
+```bash
+python -m image_similarity_search.search_engine search \
+    --query query.jpg \
+    --index myindex.faiss \
+    --k 5 \
+    --model-type clip \
+    --use-gpu
+```
+
+Optional arguments:
+- `--model-name`: Specific model name (required for SSCD)
+- `--k`: Number of results to return (default: 5)
+
 ## Features
 
 - Support for multiple embedding models:

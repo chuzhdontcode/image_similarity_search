@@ -1,0 +1,93 @@
+clip:
+  openai/clip-vit-base-patch16:
+    name: openai/clip-vit-base-patch16
+  openai/clip-vit-base-patch32:
+    name: openai/clip-vit-base-patch32
+  openai/clip-vit-large-patch14:
+    name: openai/clip-vit-large-patch14
+  openai/clip-vit-large-patch14-336:
+    name: openai/clip-vit-large-patch14-336
+dino:
+  facebook/dino-vitb16:
+    name: facebook/dino-vitb16
+  facebook/dino-vitb8:
+    name: facebook/dino-vitb8
+  facebook/dino-vits16:
+    name: facebook/dino-vits16
+  facebook/dino-vits8:
+    name: facebook/dino-vits8
+  facebook/dinov2-base:
+    name: facebook/dinov2-base
+  facebook/dinov2-base-imagenet1k-1-layer:
+    name: facebook/dinov2-base-imagenet1k-1-layer
+  facebook/dinov2-giant:
+    name: facebook/dinov2-giant
+  facebook/dinov2-giant-imagenet1k-1-layer:
+    name: facebook/dinov2-giant-imagenet1k-1-layer
+  facebook/dinov2-large:
+    name: facebook/dinov2-large
+  facebook/dinov2-large-imagenet1k-1-layer:
+    name: facebook/dinov2-large-imagenet1k-1-layer
+  facebook/dinov2-small:
+    name: facebook/dinov2-small
+  facebook/dinov2-small-imagenet1k-1-layer:
+    name: facebook/dinov2-small-imagenet1k-1-layer
+  facebook/dinov2-with-registers-base:
+    name: facebook/dinov2-with-registers-base
+  facebook/dinov2-with-registers-base-imagenet1k-1-layer:
+    name: facebook/dinov2-with-registers-base-imagenet1k-1-layer
+  facebook/dinov2-with-registers-giant:
+    name: facebook/dinov2-with-registers-giant
+  facebook/dinov2-with-registers-giant-imagenet1k-1-layer:
+    name: facebook/dinov2-with-registers-giant-imagenet1k-1-layer
+  facebook/dinov2-with-registers-large:
+    name: facebook/dinov2-with-registers-large
+  facebook/dinov2-with-registers-large-imagenet1k-1-layer:
+    name: facebook/dinov2-with-registers-large-imagenet1k-1-layer
+  facebook/dinov2-with-registers-small:
+    name: facebook/dinov2-with-registers-small
+  facebook/dinov2-with-registers-small-imagenet1k-1-layer:
+    name: facebook/dinov2-with-registers-small-imagenet1k-1-layer
+sscd:
+  sscd_disc_advanced:
+    augmentations: advanced
+    dataset: DISC
+    dimensions: 512
+    name: sscd_disc_advanced
+    torchvision: https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_advanced.torchvision.pt
+    trunk: ResNet50
+  sscd_disc_blur:
+    augmentations: strong blur
+    dataset: DISC
+    dimensions: 512
+    name: sscd_disc_blur
+    torchvision: https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_blur.torchvision.pt
+    trunk: ResNet50
+  sscd_disc_mixup:
+    augmentations: advanced + mixup
+    dataset: DISC
+    dimensions: 512
+    name: sscd_disc_mixup
+    torchvision: https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_disc_mixup.torchvision.pt
+    trunk: ResNet50
+  sscd_imagenet_advanced:
+    augmentations: advanced
+    dataset: ImageNet
+    dimensions: 512
+    name: sscd_imagenet_advanced
+    torchvision: https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_imagenet_advanced.torchvision.pt
+    trunk: ResNet50
+  sscd_imagenet_blur:
+    augmentations: strong blur
+    dataset: ImageNet
+    dimensions: 512
+    name: sscd_imagenet_blur
+    torchvision: https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_imagenet_blur.torchvision.pt
+    trunk: ResNet50
+  sscd_imagenet_mixup:
+    augmentations: advanced + mixup
+    dataset: ImageNet
+    dimensions: 512
+    name: sscd_imagenet_mixup
+    torchvision: https://dl.fbaipublicfiles.com/sscd-copy-detection/sscd_imagenet_mixup.torchvision.pt
+    trunk: ResNet50

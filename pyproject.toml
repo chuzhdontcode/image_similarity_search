@@ -16,7 +16,7 @@ classifiers = [
 dependencies = [
     "torch>=2.0.0",
     "torchvision>=0.15.0",
-    "faiss-gpu",                # or faiss-gpu for CUDA support
+    "faiss-cpu>=1.7.4",
     "transformers>=4.30.0",
     "pillow>=9.0.0",
     "numpy>=1.21.0,<2.0.0",
@@ -24,11 +24,13 @@ dependencies = [
     "pytorch-lightning>=2.0.0",
     "pandas>=2.0.0",
     "huggingface-hub>=0.16.0",
+    "toml>=0.10.0",
+    "PyYAML>=6.0.0",
+    "requests>=2.31.0",
 ]
 
 [project.optional-dependencies]
-gpu = ["faiss-gpu"]
-cpu = ["faiss-cpu>=1.7.4"]
+gpu = ["faiss-gpu"] # Deprecated
 
 [tool.setuptools]
 packages = ["image_similarity_search"]
