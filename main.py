@@ -51,6 +51,12 @@ def main():
         default=2,
         help="Minimum number of images to form a cluster",
     )
+    parser.add_argument(
+        "--normalize_features",
+        action="store_true",
+        default=True,
+        help="Whether to normalize feature vectors",
+    )
 
     args = parser.parse_args()
 
@@ -60,6 +66,7 @@ def main():
         threshold=args.threshold,
         batch_size=args.batch_size,
         model_name=args.model_name,
+        normalize_features=args.normalize_features,
     )
 
     print(f"Processing images in {args.image_directory}...")

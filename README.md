@@ -1,6 +1,10 @@
 # Image Similarity Search Engine
 
-A flexible image similarity search engine that supports multiple embedding models (CLIP, SSCD, DINOv2) and both CPU and GPU operations using FAISS.
+A flexible image processing library that provides two main functionalities:
+1. Image Similarity Search: Find similar images using state-of-the-art embedding models
+2. Image Clustering: Group similar images using hierarchical clustering
+
+Both features support multiple embedding models (CLIP, SSCD, DINOv2) and both CPU and GPU operations using FAISS.
 
 ## Installation
 
@@ -14,7 +18,12 @@ For GPU support:
 pip install ".[gpu]"
 ```
 
-## Usage
+## Supported Models
+Refer to [Model List](image_similarity_search/config/model_urls.yaml)
+
+## Image Similarity Search
+
+The `ImageSearchEngine` class provides fast and efficient similarity search capabilities:
 
 ```python
 from PIL import Image
@@ -35,10 +44,33 @@ search_engine.add_images(images, image_ids)
 # Search for similar images
 query_image = Image.open("query.jpg")
 results = search_engine.search(query_image, k=5)
+```
 
-# Save and load index
-search_engine.save_index("index.faiss")
-search_engine.load_index("index.faiss")
+## Image Clustering
+
+The `ImageClusterer` class helps organize image collections by grouping similar images:
+
+```python
+from image_similarity_search import ImageClusterer
+
+# Initialize the clusterer
+clusterer = ImageClusterer(
+    model_type="clip",  # or "sscd" or "dinov2"
+    use_gpu=True,      # Set to False for CPU-only
+    threshold=0.1,    # Distance threshold for clustering
+    batch_size=32,     # Batch size for processing,
+    model_name="openai/clip-vit-large-patch14-336"
+)
+
+# Process images and get clusters
+clusters = clusterer.process_images("path/to/image/directory")
+
+# Organize clustered images into directories
+clusterer.organize_clusters(
+    clusters,
+    output_directory="path/to/output",
+    min_cluster_size=2  # Minimum images to form a cluster
+)
 ```
 
 ## Command Line Interface
@@ -75,19 +107,22 @@ Optional arguments:
 
 ## Features
 
+- Multiple operation modes:
+  - Similarity Search: Find images similar to a query image
+  - Clustering: Group similar images automatically
 - Support for multiple embedding models:
   - CLIP (OpenAI)
-  - SSCD (Simple Semantic Contrastive Distillation)
+  - SSCD (Self-Supervised Descriptor for Image Copy Detection)
   - DINOv2 (Facebook AI)
-- GPU acceleration with FAISS-GPU
 - Multiple index types for different dataset sizes
-- Easy saving and loading of indices
 - Batch processing support
+- Hierarchical clustering with customizable thresholds
+- Automatic organization of clustered images
 
 ## Requirements
 
 - Python >= 3.8
 - PyTorch
-- FAISS (CPU or GPU version)
+- FAISS
 - Transformers
 - Pillow

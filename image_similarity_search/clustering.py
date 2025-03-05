@@ -18,6 +18,7 @@ class ImageClusterer:
         threshold: float = 0.22,
         batch_size: int = 192,
         model_name: Optional[str] = None,
+        normalize_features: bool = True,
     ):
         """Initialize the image clusterer.
 
@@ -27,11 +28,12 @@ class ImageClusterer:
             threshold: Distance threshold for hierarchical clustering
             batch_size: Batch size for processing images
             model_name: Specific model name to use (required for SSCD)
+            normalize_features: Whether to normalize feature vectors
         """
         self.search_engine = ImageSearchEngine(
             model_type=model_type,
             use_gpu=use_gpu,
-            normalize_features=True,
+            normalize_features=normalize_features,
             model_name=model_name,
         )
         self.threshold = threshold
@@ -41,7 +43,7 @@ class ImageClusterer:
         """Process images in a directory and return clusters.
 
         Args:
-            image_directory: Path to directory containing images
+            image_directory: Path to directory containing images (including subdirectories)
 
         Returns:
             Dictionary mapping cluster IDs to sets of image paths
@@ -49,54 +51,59 @@ class ImageClusterer:
         image_directory = Path(image_directory)
         allowed_extensions = {".jpeg", ".jpg", ".png", ".webp"}
 
-        # Get all valid image paths
-        image_paths = [p for p in image_directory.iterdir() if p.suffix.lower() in allowed_extensions]
+        # Get all valid image paths recursively
+        image_paths = [p for p in image_directory.rglob("*") if p.suffix.lower() in allowed_extensions]
 
         if not image_paths:
-            raise ValueError(f"No valid images found in {image_directory}")
+            raise ValueError(f"No valid images found in {image_directory} or its subdirectories")
 
         # Process images in batches
-        all_features = []
+        batch_images = []
         valid_paths = []
         damaged_paths = set()
 
-        for i in range(0, len(image_paths), self.batch_size):
+        print("Loading and validating images...")
+        for i in tqdm(range(0, len(image_paths), self.batch_size), desc="Processing image batches"):
             batch_paths = image_paths[i : i + self.batch_size]
-            batch_images = []
-            batch_valid_paths = []
+            current_batch = []
+            current_valid_paths = []
 
             # Load images
             for path in batch_paths:
                 try:
                     img = Image.open(path)
                     img.load()  # Verify the image can be loaded
-                    batch_images.append(img)
-                    batch_valid_paths.append(path)
+                    current_batch.append(img)
+                    current_valid_paths.append(path)
                 except Exception as e:
                     print(f"\nError processing image {path}: {e}")
                     damaged_paths.add(path)
                     continue
 
-            if batch_images:
-                # Get embeddings using the search engine's encoder
-                features = self.search_engine.encoder.encode(batch_images)
-                all_features.extend(features)
-                valid_paths.extend(batch_valid_paths)
+            if current_batch:
+                batch_images.extend(current_batch)
+                valid_paths.extend(current_valid_paths)
 
         if not valid_paths:
             raise ValueError("No valid images could be processed")
 
-        # Convert features to numpy array
-        features_array = np.array(all_features)
-
-        # Compute distance matrix
-        print("Computing distance matrix...")
+        # Add images to the search engine's FAISS index
+        self.search_engine.add_images(batch_images, [str(p) for p in valid_paths])
+        
+        # Use the search engine to compute all pairwise distances
+        print("Computing distance matrix using FAISS...")
+        num_images = len(batch_images)
+        
+        # Get all pairwise distances using the search engine's FAISS index
         distances = []
-        for i in tqdm(range(len(features_array))):
-            for j in range(i + 1, len(features_array)):
-                # Use L2 distance between normalized vectors
-                dist = np.linalg.norm(features_array[i] - features_array[j])
-                distances.append(dist)
+        for i in tqdm(range(num_images), desc="Computing pairwise distances"):
+            # Search for all other images using the current image as query
+            results = self.search_engine.search(batch_images[i], k=num_images)
+            # Extract only the distances for the upper triangular part
+            for j, (_, dist) in enumerate(results):
+                if j > i:  # We only need upper triangular part
+                    distances.append(dist)
+                    print(dist)
 
         # Perform hierarchical clustering
         print("Performing hierarchical clustering...")
@@ -125,7 +132,9 @@ class ImageClusterer:
 
         # Organize images into clusters
         all_clustered_images = set()
-        for idx, image_paths in enumerate(clusters.values()):
+        print("Organizing clusters...")
+        for idx in tqdm(clusters.keys(), desc="Processing clusters"):
+            image_paths = clusters[idx]
             if len(image_paths) >= min_cluster_size:
                 cluster_dir = output_directory / f"cluster_{idx}"
                 cluster_dir.mkdir(parents=True, exist_ok=True)
@@ -147,7 +156,8 @@ class ImageClusterer:
         }
 
         unique_images = all_images - all_clustered_images
-        for image_path in unique_images:
+        print("Processing unique images...")
+        for image_path in tqdm(unique_images, desc="Moving unique images"):
             source = Path(image_path)
             destination = unique_dir / source.name
             shutil.copy(source, destination)

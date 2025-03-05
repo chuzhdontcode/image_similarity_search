@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import faiss
 from PIL import Image
+from tqdm.auto import tqdm
 from .models import CLIPEncoder, SSCDEncoder, DINOv2Encoder
 
 
@@ -87,15 +88,27 @@ class ImageSearchEngine:
             images: List of PIL Images
             image_ids: Optional list of image identifiers
         """
-        features = self.encoder.encode(images)
+        # Process images in smaller batches to show progress
+        batch_size = 32
+        all_features = []
+        
+        for i in tqdm(range(0, len(images), batch_size), desc="Encoding images"):
+            batch = images[i:i + batch_size]
+            features = self.encoder.encode(batch)
+            all_features.append(features)
+        
+        # Combine all features
+        features = np.vstack(all_features)
         features = self._normalize_features(features)
 
         if self.index is None:
             self.dimension = features.shape[1]
             self.index = self._create_index(self.dimension)
             if self.index_type == "ivf":
+                print("Training IVF index...")
                 self.index.train(features)
 
+        print("Adding features to index...")
         self.index.add(features)
 
         if image_ids is None:
@@ -118,7 +131,20 @@ class ImageSearchEngine:
         if self.index is None:
             raise RuntimeError("No images added to the index yet")
 
-        query_features = self.encoder.encode(query_image)
+        # Handle batch processing with progress bar
+        if isinstance(query_image, list):
+            batch_size = 32
+            all_query_features = []
+            
+            for i in tqdm(range(0, len(query_image), batch_size), desc="Encoding query images"):
+                batch = query_image[i:i + batch_size]
+                features = self.encoder.encode(batch)
+                all_query_features.append(features)
+            
+            query_features = np.vstack(all_query_features)
+        else:
+            query_features = self.encoder.encode(query_image)
+
         query_features = self._normalize_features(query_features)
         distances, indices = self.index.search(query_features, k)
 
